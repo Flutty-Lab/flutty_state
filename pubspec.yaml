@@ -1,0 +1,21 @@
+name: flutty_state
+description: "Lightweight and reactive state management solution for Flutter."
+version: 0.1.0
+homepage: https://github.com/Flutty-Lab/flutty_state
+repository: https://github.com/Flutty-Lab/flutty_state
+issue_tracker: https://github.com/Flutty-Lab/flutty_state/issues
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
