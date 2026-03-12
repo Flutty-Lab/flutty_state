@@ -229,7 +229,7 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
         appBar: appBar?.copyWith(
           actions: [
             if (appBar!.actions != null) ...appBar!.actions!,
-            if (!kIsWeb && Platform.isWindows)
+            if (kIsWeb || Platform.isWindows)
               BlocBuilder<FetchCubit<F>, FetchState<F>>(
                 builder: (context, state) {
                   if (state is RefreshFetching || state is Fetching) {
