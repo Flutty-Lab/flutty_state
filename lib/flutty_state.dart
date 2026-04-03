@@ -7,6 +7,7 @@ export 'src/flutty_builder.dart';
 export 'component/page_content.dart';
 export 'data/data_fetch_response.dart';
 export 'data/data_submit_response.dart';
+export 'data/repository.dart';
 export 'logic/fetch_cubit.dart';
 export 'logic/flutty_bloc_observer.dart';
 export 'logic/submit_cubit.dart';
