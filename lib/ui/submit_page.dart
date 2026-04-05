@@ -24,7 +24,7 @@ import 'package:flutty_state/utils.dart';
 /// ```
 class SubmitPage extends StatelessWidget {
   const SubmitPage({
-    required this.childBuilder,
+    required this.builder,
     this.padding,
     this.appBarBuilder,
     this.floatingActionButtonBuilder,
@@ -32,17 +32,19 @@ class SubmitPage extends StatelessWidget {
     this.timeoutError,
     this.unexpectedError,
     this.technicalError,
+    this.useCustomScrollView = true,
     super.key,
   });
 
-  final SubmitWidgetBuilder<void> childBuilder;
+  final SubmitWidgetBuilder builder;
   final EdgeInsets? padding;
-  final AppBarBuilder<void>? appBarBuilder;
+  final AppBarBuilder? appBarBuilder;
   final PageElementWidgetBuilder<void>? floatingActionButtonBuilder;
   final PageElementWidgetBuilder<void>? stickyBottomBuilder;
   final String? timeoutError;
   final String? unexpectedError;
   final String? technicalError;
+  final bool useCustomScrollView;
 
   @override
   Widget build(BuildContext context) => BlocProvider(
@@ -52,29 +54,32 @@ class SubmitPage extends StatelessWidget {
           technicalErrorMessage: technicalError,
         ),
         child: _SubmitPage(
-          childBuilder: childBuilder,
+          builder: builder,
           padding: padding,
           appBarBuilder: appBarBuilder,
           floatingActionButtonBuilder: floatingActionButtonBuilder,
           stickyBottomBuilder: stickyBottomBuilder,
+          useCustomScrollView: useCustomScrollView,
         ),
       );
 }
 
 class _SubmitPage extends StatelessWidget {
   const _SubmitPage({
-    required this.childBuilder,
+    required this.builder,
     this.padding,
     this.appBarBuilder,
     this.floatingActionButtonBuilder,
     this.stickyBottomBuilder,
+    this.useCustomScrollView = true,
   });
 
-  final SubmitWidgetBuilder<void> childBuilder;
+  final SubmitWidgetBuilder builder;
   final EdgeInsets? padding;
-  final AppBarBuilder<void>? appBarBuilder;
+  final AppBarBuilder? appBarBuilder;
   final PageElementWidgetBuilder<void>? floatingActionButtonBuilder;
   final PageElementWidgetBuilder<void>? stickyBottomBuilder;
+  final bool useCustomScrollView;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +91,7 @@ class _SubmitPage extends StatelessWidget {
     final submitCubit = context.read<SubmitCubit<void>>();
 
     return Scaffold(
-      appBar: appBarBuilder?.call(null, submitCubit, context),
+      appBar: appBarBuilder?.call(submitCubit, context),
       floatingActionButton: floatingActionButtonBuilder?.call(
         null,
         submitCubit,
@@ -105,9 +110,12 @@ class _SubmitPage extends StatelessWidget {
           child: PageContent<void>(
             padding: padding,
             stickyBottom: stickyBottomBuilder?.call(null, submitCubit, context),
-            child: SliverToBoxAdapter(
-              child: childBuilder(submitCubit, context),
-            ),
+            useCustomScrollView: useCustomScrollView,
+            child: useCustomScrollView
+                ? SliverToBoxAdapter(
+                    child: builder(submitCubit, context),
+                  )
+                : builder(submitCubit, context),
           ),
         ),
       ),

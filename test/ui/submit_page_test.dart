@@ -9,7 +9,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: SubmitPage(
-            childBuilder: (submitter, context) => const Text('Submit Form'),
+            builder: (submitter, context) => const Text('Submit Form'),
           ),
         ),
       );

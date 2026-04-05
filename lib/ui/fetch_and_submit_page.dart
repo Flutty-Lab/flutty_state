@@ -45,6 +45,7 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
     this.timeoutError,
     this.unexpectedError,
     this.technicalError,
+    this.useCustomScrollView = true,
     super.key,
   });
 
@@ -54,13 +55,14 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
   final Widget? loader;
   final Widget? loadingFailed;
   final EdgeInsets? padding;
-  final AppBarBuilder<F>? appBarBuilder;
+  final AppBarBuilderWithData<F>? appBarBuilder;
   final StaticChildBuilder<F>? staticChildBuilder;
   final PageElementWidgetBuilder<F>? floatingActionButtonBuilder;
   final PageElementWidgetBuilder<F>? stickyBottomBuilder;
   final String? timeoutError;
   final String? unexpectedError;
   final String? technicalError;
+  final bool useCustomScrollView;
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +96,7 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
         staticChildBuilder: staticChildBuilder,
         floatingActionButtonBuilder: floatingActionButtonBuilder,
         stickyBottomBuilder: stickyBottomBuilder,
+        useCustomScrollView: useCustomScrollView,
       ),
     );
   }
@@ -110,6 +113,7 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
     StaticChildBuilder<F>? staticChildBuilder,
     this.floatingActionButtonBuilder,
     this.stickyBottomBuilder,
+    this.useCustomScrollView = true,
     super.key,
   }) : _staticChildBuilder = staticChildBuilder ?? ((widget, _, __) => widget);
 
@@ -118,10 +122,11 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
   final Widget? loadingFailed;
   final SuccessWidgetBuilder<F> childBuilder;
   final EdgeInsets? padding;
-  final AppBarBuilder<F>? appBarBuilder;
+  final AppBarBuilderWithData<F>? appBarBuilder;
   final StaticChildBuilder<F> _staticChildBuilder;
   final PageElementWidgetBuilder<F>? floatingActionButtonBuilder;
   final PageElementWidgetBuilder<F>? stickyBottomBuilder;
+  final bool useCustomScrollView;
 
   @override
   Widget build(BuildContext context) {
@@ -169,9 +174,12 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
             context,
           );
 
-          final childWithSliver = switch (state) {
-            FetchSucceed<F>() => SliverToBoxAdapter(child: staticChild),
-            _ => SliverFillRemaining(hasScrollBody: false, child: staticChild),
+          final wrappedChild = switch (state) {
+            FetchSucceed<F>() when useCustomScrollView =>
+              SliverToBoxAdapter(child: staticChild),
+            _ when useCustomScrollView =>
+              SliverFillRemaining(hasScrollBody: false, child: staticChild),
+            _ => staticChild,
           };
 
           final appBar = appBarBuilder?.call(
@@ -198,7 +206,8 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
             padding: padding,
             stickyBottom: stickyBottom,
             floatingActionButton: floatingActionButton,
-            child: childWithSliver,
+            useCustomScrollView: useCustomScrollView,
+            child: wrappedChild,
           );
         },
       ),
@@ -214,6 +223,7 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
     required this.child,
     required this.floatingActionButton,
     required this.stickyBottom,
+    required this.useCustomScrollView,
     super.key,
   });
 
@@ -223,6 +233,7 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
   final Widget child;
   final Widget? floatingActionButton;
   final Widget? stickyBottom;
+  final bool useCustomScrollView;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -257,6 +268,7 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
             child: PageContent<F>(
               padding: padding,
               stickyBottom: stickyBottom,
+              useCustomScrollView: useCustomScrollView,
               child: child,
             ),
           ),

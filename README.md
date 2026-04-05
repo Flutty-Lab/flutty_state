@@ -16,7 +16,7 @@ The main value of this package is the set of **ready-to-use pages** that help yo
 
 ```yaml
 dependencies:
-  flutty_state: ^0.1.1
+  flutty_state: ^0.2.0
 ```
 
 ## Usage
@@ -42,10 +42,10 @@ StaticPage(
 
 ```dart
 SubmitPage(
-  appBarBuilder: (_, __, ___) => AppBar(title: const Text('Submit')),
-  childBuilder: (submitCubit, context) {
+  appBarBuilder: (__, ___) => AppBar(title: const Text('Submit')),
+  builder: (submitter, context) {
     return FilledButton(
-      onPressed: () => submitCubit.submit(
+      onPressed: () => submitter.submit(
         dataSubmitter: () async => DataSubmitSucceedEmpty(message: 'Saved'),
       ),
       child: const Text('Submit'),
@@ -60,14 +60,14 @@ SubmitPage(
 FetchAndSubmitPage<int>(
   appBarBuilder: (data, _, __) => AppBar(title: const Text('Fetch & Submit')),
   dataFetcher: () async => DataFetchSucceed(data: 1),
-  builder: (data, submitCubit, context) {
+  builder: (data, submitter, context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Fetched value: $data'),
         const SizedBox(height: 12),
         FilledButton(
-          onPressed: () => submitCubit.submitAndFetch(
+          onPressed: () => submitter.submitAndFetch(
             dataSubmitter: () async => DataSubmitSucceedEmpty(message: 'OK'),
           ),
           child: const Text('Submit + refresh'),

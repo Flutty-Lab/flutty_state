@@ -14,11 +14,13 @@ typedef SuccessWidgetBuilder<F> = Widget Function(
 
 typedef PageElementWidgetBuilder<F> = Widget Function(
     F? data, SubmitCubit<F> submitter, BuildContext context);
-typedef AppBarBuilder<F> = AppBar Function(
+typedef AppBarBuilderWithData<F> = AppBar Function(
     F? data, SubmitCubit<F> submitter, BuildContext context);
+typedef AppBarBuilder = AppBar Function(
+    SubmitCubit<void> submitter, BuildContext context);
 
-typedef SubmitWidgetBuilder<F> = Widget Function(
-    SubmitCubit<F> submitter, BuildContext context);
+typedef SubmitWidgetBuilder = Widget Function(
+    SubmitCubit<void> submitter, BuildContext context);
 typedef StaticChildBuilder<F> = Widget Function(
   Widget builtChild,
   SubmitCubit<F> submitter,

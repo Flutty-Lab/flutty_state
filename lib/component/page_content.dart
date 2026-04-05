@@ -8,12 +8,14 @@ class PageContent<T> extends StatelessWidget {
     required this.padding,
     required this.child,
     this.stickyBottom,
+    this.useCustomScrollView = true,
     super.key,
   });
 
   final EdgeInsets? padding;
   final Widget child;
   final Widget? stickyBottom;
+  final bool useCustomScrollView;
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +26,12 @@ class PageContent<T> extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: padding ?? EdgeInsets.all(Dimens.standardSpacing),
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [child],
-                ),
+                child: useCustomScrollView
+                    ? CustomScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [child],
+                      )
+                    : child,
               ),
             ),
             if (stickyBottom != null) stickyBottom!,
