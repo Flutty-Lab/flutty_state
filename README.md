@@ -12,11 +12,13 @@ The main value of this package is the set of **ready-to-use pages** that help yo
 - **`SubmitPage`**: handle form submission lifecycle (loading, success, error) with a clean layout.
 - **`StaticPage`**: a simple scrollable page layout with safe area + padding.
 
+`FetchAndSubmitPage` also lets you customize fetch error rendering with `fetchFailedBuilder`, which receives the fetch failure state and a retry callback.
+
 ## Installation
 
 ```yaml
 dependencies:
-  flutty_state: ^0.2.0
+  flutty_state: ^0.3.0
 ```
 
 ## Usage
@@ -60,6 +62,21 @@ SubmitPage(
 FetchAndSubmitPage<int>(
   appBarBuilder: (data, _, __) => AppBar(title: const Text('Fetch & Submit')),
   dataFetcher: () async => DataFetchSucceed(data: 1),
+  fetchFailedBuilder: (failure, retryFetch, context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(failure.failedMessage),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: retryFetch,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  },
   builder: (data, submitter, context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

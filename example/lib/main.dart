@@ -52,6 +52,14 @@ class HomePage extends StatelessWidget {
             ),
             child: const Text('FetchAndSubmitPage'),
           ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => const FetchAndSubmitWithFetchErrorDemo()),
+            ),
+            child: const Text('FetchAndSubmitPage (fetch error + retry)'),
+          ),
         ],
       ),
     );
@@ -169,6 +177,62 @@ class _FetchAndSubmitDemoState extends State<FetchAndSubmitDemo> {
   }
 }
 
+class FetchAndSubmitWithFetchErrorDemo extends StatefulWidget {
+  const FetchAndSubmitWithFetchErrorDemo({super.key});
+
+  @override
+  State<FetchAndSubmitWithFetchErrorDemo> createState() =>
+      _FetchAndSubmitWithFetchErrorDemoState();
+}
+
+class _FetchAndSubmitWithFetchErrorDemoState
+    extends State<FetchAndSubmitWithFetchErrorDemo> {
+  final _repo = FakeRepository();
+
+  @override
+  Widget build(BuildContext context) {
+    return FetchAndSubmitPage<Profile>(
+      appBarBuilder: (data, _, __) => AppBar(
+        title:
+            Text(data == null ? 'Fetch error demo' : 'Recovered: ${data.name}'),
+      ),
+      dataFetcher: _repo.fetchProfileFailOnce,
+      fetchFailedBuilder: (failure, retryFetch, context) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Fetch failed: ${failure.failedMessage}'),
+              const SizedBox(height: 8),
+              const Text('Tap retry to fetch data again.'),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: retryFetch,
+                child: const Text('Retry fetch'),
+              ),
+            ],
+          ),
+        );
+      },
+      builder: (data, submitCubit, context) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Name: ${data.name}'),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: () => submitCubit.submitAndFetch(
+                dataSubmitter: () => _repo.incrementCounter(),
+              ),
+              child: Text('Increment counter (${data.counter})'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 // A simple data model representing a user profile with a name and a counter.
 
 class Profile {
@@ -180,12 +244,24 @@ class Profile {
 
 class FakeRepository {
   var _counter = 0;
+  var _shouldFailFetchOnce = true;
 
   Future<DataFetchingResponse<Profile>> fetchProfile() async {
     await Future<void>.delayed(const Duration(milliseconds: 1000));
     return DataFetchSucceed(
       data: Profile(name: 'Flutty', counter: _counter),
     );
+  }
+
+  Future<DataFetchingResponse<Profile>> fetchProfileFailOnce() async {
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    if (_shouldFailFetchOnce) {
+      _shouldFailFetchOnce = false;
+      return DataFetchFailed(
+        message: 'Simulated network error on first fetch',
+      );
+    }
+    return fetchProfile();
   }
 
   Future<DataSubmitResponse<void>> saveValue(String value) async {

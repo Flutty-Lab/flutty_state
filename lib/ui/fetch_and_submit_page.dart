@@ -36,7 +36,7 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
     required this.dataFetcher,
     this.dataUpdatedStream,
     this.loader,
-    this.loadingFailed,
+    this.fetchFailedBuilder,
     this.padding,
     this.appBarBuilder,
     this.staticChildBuilder,
@@ -45,6 +45,8 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
     this.timeoutError,
     this.unexpectedError,
     this.technicalError,
+    this.onFetchError,
+    this.onSubmitError,
     this.useCustomScrollView = true,
     super.key,
   });
@@ -53,7 +55,7 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
   final DataFetcher<F> dataFetcher;
   final Stream<F>? dataUpdatedStream;
   final Widget? loader;
-  final Widget? loadingFailed;
+  final FailedWidgetBuilder<FetchFailed>? fetchFailedBuilder;
   final EdgeInsets? padding;
   final AppBarBuilderWithData<F>? appBarBuilder;
   final StaticChildBuilder<F>? staticChildBuilder;
@@ -62,6 +64,15 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
   final String? timeoutError;
   final String? unexpectedError;
   final String? technicalError;
+
+  /// Optional callback invoked on fetch / refresh exceptions, after the
+  /// failure has been logged. Useful to wire in app-level monitoring.
+  final OnFetchError? onFetchError;
+
+  /// Optional callback invoked on submit exceptions, after the failure has
+  /// been logged. Useful to wire in app-level monitoring.
+  final OnSubmitError? onSubmitError;
+
   final bool useCustomScrollView;
 
   @override
@@ -69,6 +80,7 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
     final fetchCubit = FetchCubit<F>(
       timeoutMessage: timeoutError,
       unexpectedExceptionMessage: unexpectedError,
+      onFetchError: onFetchError,
       dataUpdatedStream: dataUpdatedStream,
     );
     return MultiBlocProvider(
@@ -83,13 +95,14 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
             timeoutMessage: timeoutError,
             unexpectedExceptionMessage: unexpectedError,
             technicalErrorMessage: technicalError,
+            onSubmitError: onSubmitError,
           ),
         ),
       ],
       child: _FetchAndSubmitPage(
         dataFetcher: dataFetcher,
         loader: loader,
-        loadingFailed: loadingFailed,
+        loadingFailedBuilder: fetchFailedBuilder,
         childBuilder: builder,
         padding: padding,
         appBarBuilder: appBarBuilder,
@@ -106,7 +119,7 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
   _FetchAndSubmitPage({
     required this.dataFetcher,
     required this.loader,
-    required this.loadingFailed,
+    required this.loadingFailedBuilder,
     required this.childBuilder,
     this.padding,
     this.appBarBuilder,
@@ -119,7 +132,7 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
 
   final DataFetcher<F> dataFetcher;
   final Widget? loader;
-  final Widget? loadingFailed;
+  final FailedWidgetBuilder<FetchFailed>? loadingFailedBuilder;
   final SuccessWidgetBuilder<F> childBuilder;
   final EdgeInsets? padding;
   final AppBarBuilderWithData<F>? appBarBuilder;
@@ -156,32 +169,39 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
         builder: (context, state) {
           final submitCubit = context.read<SubmitCubit<F>>();
 
+          // Build content based on fetch state
           final content = switch (state) {
-            FetchFailed() => loadingFailed ??
-                Padding(
-                  padding: EdgeInsets.all(Dimens.standardSpacing),
-                  child: Center(
-                    child: ErrorCard(errorMessage: state.failedMessage),
-                  ),
-                ),
+            FetchFailed() => loadingFailedBuilder?.call(
+                    state,
+                    () => context
+                        .read<FetchCubit<F>>()
+                        .fetch(dataFetcher: dataFetcher),
+                    context) ??
+                _DefaultErrorContent(error: state.failedMessage),
             FetchSucceed<F>() => childBuilder(state.data, submitCubit, context),
             _ => loader ?? const Center(child: RefreshProgressIndicator()),
           };
 
+          // Wrapping the content with static child if provided, so that it remains visible during loading states
           final staticChild = _staticChildBuilder(
             content,
             submitCubit,
             context,
           );
 
-          final wrappedChild = switch (state) {
-            FetchSucceed<F>() when useCustomScrollView =>
-              SliverToBoxAdapter(child: staticChild),
-            _ when useCustomScrollView =>
-              SliverFillRemaining(hasScrollBody: false, child: staticChild),
-            _ => staticChild,
+          // If fetch failed and no custom error builder is provided, we wrap with CustomScrollView to enable pull-to-refresh. In other cases, we follow the useCustomScrollView flag.
+          final isWrappedWithCustomerScrollView = switch (state) {
+            FetchFailed<F>() when loadingFailedBuilder == null => true,
+            _ => useCustomScrollView,
           };
 
+          final wrappedChild = isWrappedWithCustomerScrollView
+              ? _CustomScrollView(
+                  staticChild: staticChild,
+                  useSliverToBoxAdapter: state is FetchSucceed<F>)
+              : staticChild;
+
+          // Build app bar, sticky bottom, and floating action button with access to fetched data if available
           final appBar = appBarBuilder?.call(
             state is FetchSucceed<F> ? state.data : null,
             submitCubit,
@@ -206,10 +226,49 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
             padding: padding,
             stickyBottom: stickyBottom,
             floatingActionButton: floatingActionButton,
-            useCustomScrollView: useCustomScrollView,
             child: wrappedChild,
           );
         },
+      ),
+    );
+  }
+}
+
+class _CustomScrollView extends StatelessWidget {
+  const _CustomScrollView({
+    required this.staticChild,
+    required this.useSliverToBoxAdapter,
+  });
+
+  final Widget staticChild;
+  final bool useSliverToBoxAdapter;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        if (useSliverToBoxAdapter) SliverToBoxAdapter(child: staticChild),
+        if (!useSliverToBoxAdapter)
+          SliverFillRemaining(hasScrollBody: false, child: staticChild),
+      ],
+    );
+  }
+}
+
+class _DefaultErrorContent extends StatelessWidget {
+  const _DefaultErrorContent({
+    required this.error,
+  });
+
+  final String error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(Dimens.standardSpacing),
+      child: Center(
+        child: ErrorCard(errorMessage: error),
       ),
     );
   }
@@ -223,7 +282,6 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
     required this.child,
     required this.floatingActionButton,
     required this.stickyBottom,
-    required this.useCustomScrollView,
     super.key,
   });
 
@@ -233,7 +291,6 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
   final Widget child;
   final Widget? floatingActionButton;
   final Widget? stickyBottom;
-  final bool useCustomScrollView;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -268,7 +325,6 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
             child: PageContent<F>(
               padding: padding,
               stickyBottom: stickyBottom,
-              useCustomScrollView: useCustomScrollView,
               child: child,
             ),
           ),

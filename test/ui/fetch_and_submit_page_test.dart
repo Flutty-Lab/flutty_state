@@ -90,7 +90,7 @@ void main() {
         MaterialApp(
           home: FetchAndSubmitPage<FakeUserData>(
             dataFetcher: fetchData,
-            loadingFailed: customErrorWidget,
+            fetchFailedBuilder: (_, __, ___) => customErrorWidget,
             builder: (data, submitter, context) => Text('User: ${data.name}'),
           ),
         ),

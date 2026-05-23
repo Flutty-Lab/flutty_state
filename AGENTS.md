@@ -15,6 +15,7 @@ Flutter package (`pub.dev: flutty_state`) for ready-to-use page patterns and lig
 
 ## Version-sensitive API (from CHANGELOG)
 
+- `0.2.1`: fetch/submit failures are logged via `dart:developer`; `FetchCubit`, `SubmitCubit`, `FetchAndSubmitPage`, and `SubmitPage` accept optional `onFetchError` / `onSubmitError` callbacks (typedefs `OnFetchError`, `OnSubmitError` in `lib/utils.dart`). `FetchFailed` / `RefreshFailed` now carry the original `exception`.
 - `0.2.0`: all three pages (`FetchAndSubmitPage`, `SubmitPage`, `StaticPage`) support `useCustomScrollView` for sliver-compatible layouts.
 - `0.2.0`: `SubmitPage.childBuilder` was renamed to `SubmitPage.builder` (aligns with `FetchAndSubmitPage`).
 - `0.1.2`: `lib/data/repository.dart` is exported from the barrel (`lib/flutty_state.dart`).

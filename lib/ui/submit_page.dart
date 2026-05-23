@@ -32,6 +32,7 @@ class SubmitPage extends StatelessWidget {
     this.timeoutError,
     this.unexpectedError,
     this.technicalError,
+    this.onSubmitError,
     this.useCustomScrollView = true,
     super.key,
   });
@@ -44,6 +45,11 @@ class SubmitPage extends StatelessWidget {
   final String? timeoutError;
   final String? unexpectedError;
   final String? technicalError;
+
+  /// Optional callback invoked on submit exceptions, after the failure has
+  /// been logged. Useful to wire in app-level monitoring.
+  final OnSubmitError? onSubmitError;
+
   final bool useCustomScrollView;
 
   @override
@@ -52,6 +58,7 @@ class SubmitPage extends StatelessWidget {
           timeoutMessage: timeoutError,
           unexpectedExceptionMessage: unexpectedError,
           technicalErrorMessage: technicalError,
+          onSubmitError: onSubmitError,
         ),
         child: _SubmitPage(
           builder: builder,
@@ -110,10 +117,14 @@ class _SubmitPage extends StatelessWidget {
           child: PageContent<void>(
             padding: padding,
             stickyBottom: stickyBottomBuilder?.call(null, submitCubit, context),
-            useCustomScrollView: useCustomScrollView,
             child: useCustomScrollView
-                ? SliverToBoxAdapter(
-                    child: builder(submitCubit, context),
+                ? CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: builder(submitCubit, context),
+                      )
+                    ],
                   )
                 : builder(submitCubit, context),
           ),

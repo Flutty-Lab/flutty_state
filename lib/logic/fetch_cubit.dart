@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -11,6 +12,7 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
   FetchCubit({
     this.timeoutMessage,
     this.unexpectedExceptionMessage,
+    this.onFetchError,
     Stream<F>? dataUpdatedStream,
   }) : super(FetchInitial()) {
     _streamSubscription = dataUpdatedStream?.listen(_onDataUpdated);
@@ -18,6 +20,11 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
 
   final String? timeoutMessage;
   final String? unexpectedExceptionMessage;
+
+  /// Optional callback invoked whenever [fetch] / [refresh] catches an
+  /// exception, after the failure has been logged.
+  final OnFetchError? onFetchError;
+
   StreamSubscription<F>? _streamSubscription;
 
   Future<void> _onDataUpdated(F data) async {
@@ -36,7 +43,8 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
     if (!isClosed) {
       emit(switch (result) {
         DataFetchSucceed<F>() => FetchSucceed(data: result.data),
-        DataFetchFailed<F>() => FetchFailed(result.message),
+        DataFetchFailed<F>() =>
+          FetchFailed(result.message, exception: result.exception),
       });
     }
   }
@@ -50,7 +58,8 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
     if (!isClosed) {
       emit(switch (result) {
         DataFetchSucceed<F>() => FetchSucceed(data: result.data),
-        DataFetchFailed<F>() => RefreshFailed(result.message),
+        DataFetchFailed<F>() =>
+          RefreshFailed(result.message, exception: result.exception),
       });
     }
   }
@@ -61,17 +70,34 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
   }) async {
     try {
       return await dataFetcher().timeout(timeout);
-    } on TimeoutException catch (e) {
+    } on TimeoutException catch (e, stackTrace) {
+      _reportError(e, stackTrace, timeoutMessage ?? 'Timeout');
       return DataFetchFailed(
         message: timeoutMessage ?? 'Timeout',
         exception: e,
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      _reportError(
+        e,
+        stackTrace,
+        unexpectedExceptionMessage ?? 'Unexpected error',
+      );
       return DataFetchFailed(
         message: unexpectedExceptionMessage ?? 'Unexpected error',
         exception: e,
       );
     }
+  }
+
+  void _reportError(Object error, StackTrace stackTrace, String message) {
+    developer.log(
+      message,
+      name: 'flutty_state.FetchCubit<$F>',
+      error: error,
+      stackTrace: stackTrace,
+      level: 1000,
+    );
+    onFetchError?.call(error, stackTrace);
   }
 
   void refreshWithoutFetch({required F data}) {

@@ -9,8 +9,28 @@ typedef DataFetcher<F> = Future<DataFetchingResponse<F>> Function();
 typedef DataSubmitter<F> = Future<DataSubmitResponse<F>> Function();
 typedef DataOnResponseReceived<F> = void Function(DataSubmitResponse<F>);
 
+/// Callback invoked when a fetch operation throws.
+///
+/// Receives the [exception] and its [stackTrace], allowing consumers to plug
+/// in their own logging / monitoring (Sentry, Crashlytics, etc.).
+typedef OnFetchError = void Function(
+  Object exception,
+  StackTrace stackTrace,
+);
+
+/// Callback invoked when a submit operation throws.
+///
+/// Receives the [exception] and its [stackTrace], allowing consumers to plug
+/// in their own logging / monitoring (Sentry, Crashlytics, etc.).
+typedef OnSubmitError = void Function(
+  Object exception,
+  StackTrace stackTrace,
+);
+
 typedef SuccessWidgetBuilder<F> = Widget Function(
     F data, SubmitCubit<F> submitter, BuildContext context);
+typedef FailedWidgetBuilder<E> = Widget Function(
+    E data, VoidCallback retryFetch, BuildContext context);
 
 typedef PageElementWidgetBuilder<F> = Widget Function(
     F? data, SubmitCubit<F> submitter, BuildContext context);
