@@ -1,8 +1,9 @@
 /// Lightweight and reactive state management solution for Flutter.
 library;
 
-export 'src/flutty_notifier.dart';
-export 'src/flutty_builder.dart';
+export 'config/flutty_notifier.dart';
+export 'config/flutty_builder.dart';
+export 'config/flutty_state_config.dart';
 
 export 'component/page_content.dart';
 export 'data/data_fetch_response.dart';

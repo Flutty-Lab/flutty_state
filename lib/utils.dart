@@ -9,22 +9,16 @@ typedef DataFetcher<F> = Future<DataFetchingResponse<F>> Function();
 typedef DataSubmitter<F> = Future<DataSubmitResponse<F>> Function();
 typedef DataOnResponseReceived<F> = void Function(DataSubmitResponse<F>);
 
-/// Callback invoked when a fetch operation throws.
+/// Signature for callbacks invoked when a fetch or submit operation fails.
 ///
-/// Receives the [exception] and its [stackTrace], allowing consumers to plug
-/// in their own logging / monitoring (Sentry, Crashlytics, etc.).
-typedef OnFetchError = void Function(
-  Object exception,
-  StackTrace stackTrace,
-);
-
-/// Callback invoked when a submit operation throws.
-///
-/// Receives the [exception] and its [stackTrace], allowing consumers to plug
-/// in their own logging / monitoring (Sentry, Crashlytics, etc.).
-typedef OnSubmitError = void Function(
-  Object exception,
-  StackTrace stackTrace,
+/// [message] is the human-readable error message that will be shown to the
+/// user. [exception] is the raw error caught by the cubit. It may be `null`
+/// if no exception was associated with the failure, and is typed as
+/// [Object] because Dart `try`/`catch` can catch any object (not only
+/// [Exception]s).
+typedef FluttyStateErrorCallback = void Function(
+  String message,
+  Object? exception,
 );
 
 typedef SuccessWidgetBuilder<F> = Widget Function(

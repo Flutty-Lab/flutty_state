@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutty_state/component/page_content.dart';
 import 'package:flutty_state/logic/submit_cubit.dart';
+import 'package:flutty_state/config/flutty_state_config.dart';
 import 'package:flutty_state/utils.dart';
 
 /// A simple page focused on form submission.
@@ -34,6 +35,7 @@ class SubmitPage extends StatelessWidget {
     this.technicalError,
     this.onSubmitError,
     this.useCustomScrollView = true,
+    this.submitLoader,
     super.key,
   });
 
@@ -46,34 +48,55 @@ class SubmitPage extends StatelessWidget {
   final String? unexpectedError;
   final String? technicalError;
 
-  /// Optional callback invoked on submit exceptions, after the failure has
-  /// been logged. Useful to wire in app-level monitoring.
-  final OnSubmitError? onSubmitError;
-
   final bool useCustomScrollView;
 
+  /// Loader shown while a submit triggered from this page is in flight.
+  ///
+  /// Falls back to [FluttyStateConfig.defaultSubmitLoader] then to the built-in
+  /// overlay.
+  final Widget? submitLoader;
+
+  /// Called whenever a submit triggered from this page fails.
+  ///
+  /// Overrides [FluttyStateConfig.defaultOnSubmitError] for this page when
+  /// provided.
+  final FluttyStateErrorCallback? onSubmitError;
+
   @override
-  Widget build(BuildContext context) => BlocProvider(
-        create: (_) => SubmitCubit<void>(
-          timeoutMessage: timeoutError,
-          unexpectedExceptionMessage: unexpectedError,
-          technicalErrorMessage: technicalError,
-          onSubmitError: onSubmitError,
-        ),
-        child: _SubmitPage(
-          builder: builder,
-          padding: padding,
-          appBarBuilder: appBarBuilder,
-          floatingActionButtonBuilder: floatingActionButtonBuilder,
-          stickyBottomBuilder: stickyBottomBuilder,
-          useCustomScrollView: useCustomScrollView,
-        ),
-      );
+  Widget build(BuildContext context) {
+    final config = FluttyStateConfig.maybeOf(context);
+    final resolvedTimeoutError =
+        timeoutError ?? config?.defaultTimeoutErrorMessage;
+    final resolvedUnexpectedError =
+        unexpectedError ?? config?.defaultUnexpectedErrorMessage;
+    final resolvedTechnicalError =
+        technicalError ?? config?.defaultTechnicalErrorMessage;
+
+    return BlocProvider(
+      create: (_) => SubmitCubit<void>(
+        timeoutMessage: resolvedTimeoutError,
+        unexpectedExceptionMessage: resolvedUnexpectedError,
+        technicalErrorMessage: resolvedTechnicalError,
+      ),
+      child: _SubmitPage(
+        builder: builder,
+        padding: padding,
+        appBarBuilder: appBarBuilder,
+        floatingActionButtonBuilder: floatingActionButtonBuilder,
+        stickyBottomBuilder: stickyBottomBuilder,
+        useCustomScrollView: useCustomScrollView,
+        submitLoader: submitLoader,
+        onSubmitError: onSubmitError,
+      ),
+    );
+  }
 }
 
 class _SubmitPage extends StatelessWidget {
   const _SubmitPage({
     required this.builder,
+    required this.submitLoader,
+    required this.onSubmitError,
     this.padding,
     this.appBarBuilder,
     this.floatingActionButtonBuilder,
@@ -87,6 +110,8 @@ class _SubmitPage extends StatelessWidget {
   final PageElementWidgetBuilder<void>? floatingActionButtonBuilder;
   final PageElementWidgetBuilder<void>? stickyBottomBuilder;
   final bool useCustomScrollView;
+  final Widget? submitLoader;
+  final FluttyStateErrorCallback? onSubmitError;
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +121,9 @@ class _SubmitPage extends StatelessWidget {
     );
 
     final submitCubit = context.read<SubmitCubit<void>>();
+    final config = FluttyStateConfig.maybeOf(context);
+    final resolvedOnSubmitError = onSubmitError ?? config?.defaultOnSubmitError;
+    final resolvedPadding = padding ?? config?.defaultPagePadding;
 
     return Scaffold(
       appBar: appBarBuilder?.call(submitCubit, context),
@@ -112,11 +140,13 @@ class _SubmitPage extends StatelessWidget {
             }
             if (state is SubmitFailed) {
               context.showErrorSnackBar(state.failedMessage);
+              resolvedOnSubmitError?.call(state.failedMessage, state.exception);
             }
           },
           child: PageContent<void>(
-            padding: padding,
+            padding: resolvedPadding,
             stickyBottom: stickyBottomBuilder?.call(null, submitCubit, context),
+            submitLoader: submitLoader,
             child: useCustomScrollView
                 ? CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),

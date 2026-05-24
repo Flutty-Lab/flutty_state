@@ -9,6 +9,7 @@ import 'package:flutty_ds/dimens.dart';
 import 'package:flutty_state/component/page_content.dart';
 import 'package:flutty_state/logic/fetch_cubit.dart';
 import 'package:flutty_state/logic/submit_cubit.dart';
+import 'package:flutty_state/config/flutty_state_config.dart';
 import 'package:flutty_state/utils.dart';
 
 /// A page that combines data fetching and form submission capabilities.
@@ -35,27 +36,39 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
     required this.builder,
     required this.dataFetcher,
     this.dataUpdatedStream,
-    this.loader,
-    this.fetchFailedBuilder,
-    this.padding,
     this.appBarBuilder,
     this.staticChildBuilder,
     this.floatingActionButtonBuilder,
     this.stickyBottomBuilder,
+    this.useCustomScrollView = true,
+    this.padding,
+    this.fetchLoader,
+    this.onFetchError,
+    this.fetchFailedBuilder,
+    this.submitLoader,
+    this.onSubmitError,
     this.timeoutError,
     this.unexpectedError,
     this.technicalError,
-    this.onFetchError,
-    this.onSubmitError,
-    this.useCustomScrollView = true,
     super.key,
   });
 
   final SuccessWidgetBuilder<F> builder;
   final DataFetcher<F> dataFetcher;
   final Stream<F>? dataUpdatedStream;
-  final Widget? loader;
+
+  /// Loader widget shown during the initial fetch.
+  ///
+  /// Resolution order: this widget, then [FluttyStateConfig.defaultFetchLoader],
+  /// then the default centered [RefreshProgressIndicator].
+  final Widget? fetchLoader;
   final FailedWidgetBuilder<FetchFailed>? fetchFailedBuilder;
+
+  /// Loader shown while a submit triggered from this page is in flight.
+  ///
+  /// Falls back to [FluttyStateConfig.defaultSubmitLoader] then to the built-in
+  /// overlay.
+  final Widget? submitLoader;
   final EdgeInsets? padding;
   final AppBarBuilderWithData<F>? appBarBuilder;
   final StaticChildBuilder<F>? staticChildBuilder;
@@ -65,22 +78,31 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
   final String? unexpectedError;
   final String? technicalError;
 
-  /// Optional callback invoked on fetch / refresh exceptions, after the
-  /// failure has been logged. Useful to wire in app-level monitoring.
-  final OnFetchError? onFetchError;
+  /// Called whenever the fetch (or refresh) fails on this page.
+  ///
+  /// Overrides [FluttyStateConfig.defaultOnFetchError] for this page when provided.
+  final FluttyStateErrorCallback? onFetchError;
 
-  /// Optional callback invoked on submit exceptions, after the failure has
-  /// been logged. Useful to wire in app-level monitoring.
-  final OnSubmitError? onSubmitError;
-
+  /// Called whenever a submit triggered from this page fails.
+  ///
+  /// Overrides [FluttyStateConfig.defaultOnSubmitError] for this page when
+  /// provided.
+  final FluttyStateErrorCallback? onSubmitError;
   final bool useCustomScrollView;
 
   @override
   Widget build(BuildContext context) {
+    final config = FluttyStateConfig.maybeOf(context);
+    final resolvedTimeoutError =
+        timeoutError ?? config?.defaultTimeoutErrorMessage;
+    final resolvedUnexpectedError =
+        unexpectedError ?? config?.defaultUnexpectedErrorMessage;
+    final resolvedTechnicalError =
+        technicalError ?? config?.defaultTechnicalErrorMessage;
+
     final fetchCubit = FetchCubit<F>(
-      timeoutMessage: timeoutError,
-      unexpectedExceptionMessage: unexpectedError,
-      onFetchError: onFetchError,
+      timeoutMessage: resolvedTimeoutError,
+      unexpectedExceptionMessage: resolvedUnexpectedError,
       dataUpdatedStream: dataUpdatedStream,
     );
     return MultiBlocProvider(
@@ -92,17 +114,17 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
           create: (_) => SubmitCubit(
             fetchCubit: fetchCubit,
             dataFetcher: dataFetcher,
-            timeoutMessage: timeoutError,
-            unexpectedExceptionMessage: unexpectedError,
-            technicalErrorMessage: technicalError,
-            onSubmitError: onSubmitError,
+            timeoutMessage: resolvedTimeoutError,
+            unexpectedExceptionMessage: resolvedUnexpectedError,
+            technicalErrorMessage: resolvedTechnicalError,
           ),
         ),
       ],
       child: _FetchAndSubmitPage(
         dataFetcher: dataFetcher,
-        loader: loader,
+        loader: fetchLoader,
         loadingFailedBuilder: fetchFailedBuilder,
+        submitLoader: submitLoader,
         childBuilder: builder,
         padding: padding,
         appBarBuilder: appBarBuilder,
@@ -110,6 +132,8 @@ class FetchAndSubmitPage<F> extends StatelessWidget {
         floatingActionButtonBuilder: floatingActionButtonBuilder,
         stickyBottomBuilder: stickyBottomBuilder,
         useCustomScrollView: useCustomScrollView,
+        onFetchError: onFetchError,
+        onSubmitError: onSubmitError,
       ),
     );
   }
@@ -120,7 +144,10 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
     required this.dataFetcher,
     required this.loader,
     required this.loadingFailedBuilder,
+    required this.submitLoader,
     required this.childBuilder,
+    required this.onFetchError,
+    required this.onSubmitError,
     this.padding,
     this.appBarBuilder,
     StaticChildBuilder<F>? staticChildBuilder,
@@ -133,12 +160,15 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
   final DataFetcher<F> dataFetcher;
   final Widget? loader;
   final FailedWidgetBuilder<FetchFailed>? loadingFailedBuilder;
+  final Widget? submitLoader;
   final SuccessWidgetBuilder<F> childBuilder;
   final EdgeInsets? padding;
   final AppBarBuilderWithData<F>? appBarBuilder;
   final StaticChildBuilder<F> _staticChildBuilder;
   final PageElementWidgetBuilder<F>? floatingActionButtonBuilder;
   final PageElementWidgetBuilder<F>? stickyBottomBuilder;
+  final FluttyStateErrorCallback? onFetchError;
+  final FluttyStateErrorCallback? onSubmitError;
   final bool useCustomScrollView;
 
   @override
@@ -148,6 +178,14 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
       'Sticky bottom and floating action button cannot be used together',
     );
 
+    final config = FluttyStateConfig.maybeOf(context);
+    final resolvedOnFetchError = onFetchError ?? config?.defaultOnFetchError;
+    final resolvedOnSubmitError = onSubmitError ?? config?.defaultOnSubmitError;
+    final resolvedLoader = loader ?? config?.defaultFetchLoader;
+    final resolvedPadding = padding ?? config?.defaultPagePadding;
+    final resolvedLoadingFailedBuilder =
+        loadingFailedBuilder ?? config?.defaultFetchFailedBuilder;
+
     return BlocListener<SubmitCubit<F>, SubmitState>(
       listener: (context, state) {
         if (state is SubmitSucceed) {
@@ -155,14 +193,17 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
         }
         if (state is SubmitFailed) {
           context.showErrorSnackBar(state.failedMessage);
+          resolvedOnSubmitError?.call(state.failedMessage, state.exception);
         }
       },
       child: BlocConsumer<FetchCubit<F>, FetchState<F>>(
         listener: (context, state) {
-          if (state is RefreshFailed) {
-            context.showErrorSnackBar(
-              (state as RefreshFailed<F>).failedMessage,
-            );
+          if (state is FetchFailed<F>) {
+            resolvedOnFetchError?.call(state.failedMessage, state.exception);
+          }
+          if (state is RefreshFailed<F>) {
+            context.showErrorSnackBar(state.failedMessage);
+            resolvedOnFetchError?.call(state.failedMessage, state.exception);
           }
         },
         buildWhen: (_, state) => state is! RefreshState,
@@ -171,7 +212,7 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
 
           // Build content based on fetch state
           final content = switch (state) {
-            FetchFailed() => loadingFailedBuilder?.call(
+            FetchFailed() => resolvedLoadingFailedBuilder?.call(
                     state,
                     () => context
                         .read<FetchCubit<F>>()
@@ -179,7 +220,8 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
                     context) ??
                 _DefaultErrorContent(error: state.failedMessage),
             FetchSucceed<F>() => childBuilder(state.data, submitCubit, context),
-            _ => loader ?? const Center(child: RefreshProgressIndicator()),
+            _ =>
+              resolvedLoader ?? const Center(child: RefreshProgressIndicator()),
           };
 
           // Wrapping the content with static child if provided, so that it remains visible during loading states
@@ -191,7 +233,7 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
 
           // If fetch failed and no custom error builder is provided, we wrap with CustomScrollView to enable pull-to-refresh. In other cases, we follow the useCustomScrollView flag.
           final isWrappedWithCustomerScrollView = switch (state) {
-            FetchFailed<F>() when loadingFailedBuilder == null => true,
+            FetchFailed<F>() when resolvedLoadingFailedBuilder == null => true,
             _ => useCustomScrollView,
           };
 
@@ -223,9 +265,10 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
           return _FetchAndSubmitPageContent(
             dataFetcher: dataFetcher,
             appBar: appBar,
-            padding: padding,
+            padding: resolvedPadding,
             stickyBottom: stickyBottom,
             floatingActionButton: floatingActionButton,
+            submitLoader: submitLoader,
             child: wrappedChild,
           );
         },
@@ -282,6 +325,7 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
     required this.child,
     required this.floatingActionButton,
     required this.stickyBottom,
+    required this.submitLoader,
     super.key,
   });
 
@@ -291,6 +335,7 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
   final Widget child;
   final Widget? floatingActionButton;
   final Widget? stickyBottom;
+  final Widget? submitLoader;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -325,6 +370,7 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
             child: PageContent<F>(
               padding: padding,
               stickyBottom: stickyBottom,
+              submitLoader: submitLoader,
               child: child,
             ),
           ),

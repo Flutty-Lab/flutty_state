@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutty_state/data/data_fetch_response.dart';
-import 'package:flutty_state/data/data_submit_response.dart';
-import 'package:flutty_state/ui/fetch_and_submit_page.dart';
-import 'package:flutty_state/ui/static_page.dart';
-import 'package:flutty_state/ui/submit_page.dart';
+import 'package:flutty_state/flutty_state.dart';
 
 void main() {
   runApp(const FluttyStateExample());
@@ -14,10 +10,31 @@ class FluttyStateExample extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Flutty State Example',
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
+    return FluttyStateConfig(
+      defaultFetchLoader: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 12),
+              Text('Loading…'),
+            ],
+          ),
+        ),
+      ),
+      defaultOnFetchError: (message, exception) {
+        debugPrint('fetch error: $message ($exception)');
+      },
+      defaultOnSubmitError: (message, exception) {
+        debugPrint('submit error: $message ($exception)');
+      },
+      child: const MaterialApp(
+        title: 'Flutty State Example',
+        debugShowCheckedModeBanner: false,
+        home: HomePage(),
+      ),
     );
   }
 }

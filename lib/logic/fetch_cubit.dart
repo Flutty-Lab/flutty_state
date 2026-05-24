@@ -12,7 +12,6 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
   FetchCubit({
     this.timeoutMessage,
     this.unexpectedExceptionMessage,
-    this.onFetchError,
     Stream<F>? dataUpdatedStream,
   }) : super(FetchInitial()) {
     _streamSubscription = dataUpdatedStream?.listen(_onDataUpdated);
@@ -20,10 +19,6 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
 
   final String? timeoutMessage;
   final String? unexpectedExceptionMessage;
-
-  /// Optional callback invoked whenever [fetch] / [refresh] catches an
-  /// exception, after the failure has been logged.
-  final OnFetchError? onFetchError;
 
   StreamSubscription<F>? _streamSubscription;
 
@@ -43,8 +38,10 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
     if (!isClosed) {
       emit(switch (result) {
         DataFetchSucceed<F>() => FetchSucceed(data: result.data),
-        DataFetchFailed<F>() =>
-          FetchFailed(result.message, exception: result.exception),
+        DataFetchFailed<F>() => FetchFailed(
+            result.message,
+            exception: result.exception,
+          ),
       });
     }
   }
@@ -58,8 +55,10 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
     if (!isClosed) {
       emit(switch (result) {
         DataFetchSucceed<F>() => FetchSucceed(data: result.data),
-        DataFetchFailed<F>() =>
-          RefreshFailed(result.message, exception: result.exception),
+        DataFetchFailed<F>() => RefreshFailed(
+            result.message,
+            exception: result.exception,
+          ),
       });
     }
   }
@@ -97,7 +96,6 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
       stackTrace: stackTrace,
       level: 1000,
     );
-    onFetchError?.call(error, stackTrace);
   }
 
   void refreshWithoutFetch({required F data}) {

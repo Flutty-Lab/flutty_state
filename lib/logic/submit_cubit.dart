@@ -16,7 +16,6 @@ class SubmitCubit<F> extends Cubit<SubmitState> {
     this.technicalErrorMessage,
     this.fetchCubit,
     this.dataFetcher,
-    this.onSubmitError,
   }) : super(SubmitInitial());
 
   final String? timeoutMessage;
@@ -24,11 +23,6 @@ class SubmitCubit<F> extends Cubit<SubmitState> {
   final String? technicalErrorMessage;
   final FetchCubit<F>? fetchCubit;
   final DataFetcher<F>? dataFetcher;
-
-  /// Optional callback invoked whenever [submit] / [submitAndFetch] /
-  /// [submitAndRefresh] catches an exception, after the failure has been
-  /// logged.
-  final OnSubmitError? onSubmitError;
 
   Future<void> submit({
     required DataSubmitter<void> dataSubmitter,
@@ -150,6 +144,5 @@ class SubmitCubit<F> extends Cubit<SubmitState> {
       stackTrace: stackTrace,
       level: 1000,
     );
-    onSubmitError?.call(error, stackTrace);
   }
 }
