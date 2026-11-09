@@ -50,16 +50,16 @@ class HomePage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           FilledButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const StaticPageDemo()),
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const StaticPageDemo())),
             child: const Text('StaticPage'),
           ),
           const SizedBox(height: 12),
           FilledButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SubmitPageDemo()),
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const SubmitPageDemo())),
             child: const Text('SubmitPage'),
           ),
           const SizedBox(height: 12),
@@ -73,7 +73,8 @@ class HomePage extends StatelessWidget {
           FilledButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (_) => const FetchAndSubmitWithFetchErrorDemo()),
+                builder: (_) => const FetchAndSubmitWithFetchErrorDemo(),
+              ),
             ),
             child: const Text('FetchAndSubmitPage (fetch error + retry)'),
           ),
@@ -128,7 +129,7 @@ class _SubmitPageDemoState extends State<SubmitPageDemo> {
   @override
   Widget build(BuildContext context) {
     return SubmitPage(
-      appBarBuilder: (__, ___) => AppBar(title: const Text('SubmitPage')),
+      appBarBuilder: (_, _) => AppBar(title: const Text('SubmitPage')),
       builder: (submitCubit, context) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,9 +172,8 @@ class _FetchAndSubmitDemoState extends State<FetchAndSubmitDemo> {
   @override
   Widget build(BuildContext context) {
     return FetchAndSubmitPage<Profile>(
-      appBarBuilder: (data, _, __) => AppBar(
-        title: Text(data == null ? 'Loading…' : 'Hello ${data.name}'),
-      ),
+      appBarBuilder: (data, _, _) =>
+          AppBar(title: Text(data == null ? 'Loading…' : 'Hello ${data.name}')),
       dataFetcher: _repo.fetchProfile,
       builder: (data, submitCubit, context) {
         return Column(
@@ -209,9 +209,10 @@ class _FetchAndSubmitWithFetchErrorDemoState
   @override
   Widget build(BuildContext context) {
     return FetchAndSubmitPage<Profile>(
-      appBarBuilder: (data, _, __) => AppBar(
-        title:
-            Text(data == null ? 'Fetch error demo' : 'Recovered: ${data.name}'),
+      appBarBuilder: (data, _, _) => AppBar(
+        title: Text(
+          data == null ? 'Fetch error demo' : 'Recovered: ${data.name}',
+        ),
       ),
       dataFetcher: _repo.fetchProfileFailOnce,
       fetchFailedBuilder: (failure, retryFetch, context) {
@@ -274,9 +275,7 @@ class FakeRepository {
     await Future<void>.delayed(const Duration(milliseconds: 600));
     if (_shouldFailFetchOnce) {
       _shouldFailFetchOnce = false;
-      return DataFetchFailed(
-        message: 'Simulated network error on first fetch',
-      );
+      return DataFetchFailed(message: 'Simulated network error on first fetch');
     }
     return fetchProfile();
   }

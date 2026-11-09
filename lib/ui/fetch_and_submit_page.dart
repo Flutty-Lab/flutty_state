@@ -155,7 +155,7 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
     this.stickyBottomBuilder,
     this.useCustomScrollView = true,
     super.key,
-  }) : _staticChildBuilder = staticChildBuilder ?? ((widget, _, __) => widget);
+  }) : _staticChildBuilder = staticChildBuilder ?? ((widget, _, _) => widget);
 
   final DataFetcher<F> dataFetcher;
   final Widget? loader;
@@ -212,13 +212,15 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
 
           // Build content based on fetch state
           final content = switch (state) {
-            FetchFailed() => resolvedLoadingFailedBuilder?.call(
+            FetchFailed() =>
+              resolvedLoadingFailedBuilder?.call(
                     state,
-                    () => context
-                        .read<FetchCubit<F>>()
-                        .fetch(dataFetcher: dataFetcher),
-                    context) ??
-                _DefaultErrorContent(error: state.failedMessage),
+                    () => context.read<FetchCubit<F>>().fetch(
+                      dataFetcher: dataFetcher,
+                    ),
+                    context,
+                  ) ??
+                  _DefaultErrorContent(error: state.failedMessage),
             FetchSucceed<F>() => childBuilder(state.data, submitCubit, context),
             _ =>
               resolvedLoader ?? const Center(child: RefreshProgressIndicator()),
@@ -240,7 +242,8 @@ class _FetchAndSubmitPage<F> extends StatelessWidget {
           final wrappedChild = isWrappedWithCustomerScrollView
               ? _CustomScrollView(
                   staticChild: staticChild,
-                  useSliverToBoxAdapter: state is FetchSucceed<F>)
+                  useSliverToBoxAdapter: state is FetchSucceed<F>,
+                )
               : staticChild;
 
           // Build app bar, sticky bottom, and floating action button with access to fetched data if available
@@ -300,9 +303,7 @@ class _CustomScrollView extends StatelessWidget {
 }
 
 class _DefaultErrorContent extends StatelessWidget {
-  const _DefaultErrorContent({
-    required this.error,
-  });
+  const _DefaultErrorContent({required this.error});
 
   final String error;
 
@@ -310,9 +311,7 @@ class _DefaultErrorContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(Dimens.standardSpacing),
-      child: Center(
-        child: ErrorCard(errorMessage: error),
-      ),
+      child: Center(child: ErrorCard(errorMessage: error)),
     );
   }
 }
@@ -339,43 +338,43 @@ class _FetchAndSubmitPageContent<F> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: appBar?.copyWith(
-          actions: [
-            if (appBar!.actions != null) ...appBar!.actions!,
-            if (kIsWeb || Platform.isWindows)
-              BlocBuilder<FetchCubit<F>, FetchState<F>>(
-                builder: (context, state) {
-                  if (state is RefreshFetching || state is Fetching) {
-                    return const RefreshProgressIndicator(
-                      elevation: 0,
-                      indicatorMargin: EdgeInsets.zero,
-                    );
-                  }
+    appBar: appBar?.copyWith(
+      actions: [
+        if (appBar!.actions != null) ...appBar!.actions!,
+        if (kIsWeb || Platform.isWindows)
+          BlocBuilder<FetchCubit<F>, FetchState<F>>(
+            builder: (context, state) {
+              if (state is RefreshFetching || state is Fetching) {
+                return const RefreshProgressIndicator(
+                  elevation: 0,
+                  indicatorMargin: EdgeInsets.zero,
+                );
+              }
 
-                  return IconButton(
-                    onPressed: () => context.read<FetchCubit<F>>().refresh(
-                          dataFetcher: dataFetcher,
-                        ),
-                    icon: const Icon(Icons.refresh),
-                  );
-                },
-              ),
-          ],
-        ),
-        floatingActionButton: floatingActionButton,
-        body: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: () =>
-                context.read<FetchCubit<F>>().refresh(dataFetcher: dataFetcher),
-            child: PageContent<F>(
-              padding: padding,
-              stickyBottom: stickyBottom,
-              submitLoader: submitLoader,
-              child: child,
-            ),
+              return IconButton(
+                onPressed: () => context.read<FetchCubit<F>>().refresh(
+                  dataFetcher: dataFetcher,
+                ),
+                icon: const Icon(Icons.refresh),
+              );
+            },
           ),
+      ],
+    ),
+    floatingActionButton: floatingActionButton,
+    body: SafeArea(
+      child: RefreshIndicator(
+        onRefresh: () =>
+            context.read<FetchCubit<F>>().refresh(dataFetcher: dataFetcher),
+        child: PageContent<F>(
+          padding: padding,
+          stickyBottom: stickyBottom,
+          submitLoader: submitLoader,
+          child: child,
         ),
-      );
+      ),
+    ),
+  );
 }
 
 extension AppBarExtension on AppBar {
@@ -410,42 +409,40 @@ extension AppBarExtension on AppBar {
     bool? forceMaterialTransparency,
     Clip? clipBehavior,
     EdgeInsetsGeometry? actionsPadding,
-  }) =>
-      AppBar(
-        leading: leading ?? this.leading,
-        automaticallyImplyLeading:
-            automaticallyImplyLeading ?? this.automaticallyImplyLeading,
-        title: title ?? this.title,
-        actions: actions ?? this.actions,
-        flexibleSpace: flexibleSpace ?? this.flexibleSpace,
-        bottom: bottom ?? this.bottom,
-        elevation: elevation ?? this.elevation,
-        scrolledUnderElevation:
-            scrolledUnderElevation ?? this.scrolledUnderElevation,
-        notificationPredicate:
-            notificationPredicate ?? this.notificationPredicate,
-        shadowColor: shadowColor ?? this.shadowColor,
-        surfaceTintColor: surfaceTintColor ?? this.surfaceTintColor,
-        shape: shape ?? this.shape,
-        backgroundColor: backgroundColor ?? this.backgroundColor,
-        foregroundColor: foregroundColor ?? this.foregroundColor,
-        iconTheme: iconTheme ?? this.iconTheme,
-        actionsIconTheme: actionsIconTheme ?? this.actionsIconTheme,
-        primary: primary ?? this.primary,
-        centerTitle: centerTitle ?? this.centerTitle,
-        excludeHeaderSemantics:
-            excludeHeaderSemantics ?? this.excludeHeaderSemantics,
-        titleSpacing: titleSpacing ?? this.titleSpacing,
-        toolbarOpacity: toolbarOpacity ?? this.toolbarOpacity,
-        bottomOpacity: bottomOpacity ?? this.bottomOpacity,
-        toolbarHeight: toolbarHeight ?? this.toolbarHeight,
-        leadingWidth: leadingWidth ?? this.leadingWidth,
-        toolbarTextStyle: toolbarTextStyle ?? this.toolbarTextStyle,
-        titleTextStyle: titleTextStyle ?? this.titleTextStyle,
-        systemOverlayStyle: systemOverlayStyle ?? this.systemOverlayStyle,
-        forceMaterialTransparency:
-            forceMaterialTransparency ?? this.forceMaterialTransparency,
-        clipBehavior: clipBehavior ?? this.clipBehavior,
-        actionsPadding: actionsPadding ?? this.actionsPadding,
-      );
+  }) => AppBar(
+    leading: leading ?? this.leading,
+    automaticallyImplyLeading:
+        automaticallyImplyLeading ?? this.automaticallyImplyLeading,
+    title: title ?? this.title,
+    actions: actions ?? this.actions,
+    flexibleSpace: flexibleSpace ?? this.flexibleSpace,
+    bottom: bottom ?? this.bottom,
+    elevation: elevation ?? this.elevation,
+    scrolledUnderElevation:
+        scrolledUnderElevation ?? this.scrolledUnderElevation,
+    notificationPredicate: notificationPredicate ?? this.notificationPredicate,
+    shadowColor: shadowColor ?? this.shadowColor,
+    surfaceTintColor: surfaceTintColor ?? this.surfaceTintColor,
+    shape: shape ?? this.shape,
+    backgroundColor: backgroundColor ?? this.backgroundColor,
+    foregroundColor: foregroundColor ?? this.foregroundColor,
+    iconTheme: iconTheme ?? this.iconTheme,
+    actionsIconTheme: actionsIconTheme ?? this.actionsIconTheme,
+    primary: primary ?? this.primary,
+    centerTitle: centerTitle ?? this.centerTitle,
+    excludeHeaderSemantics:
+        excludeHeaderSemantics ?? this.excludeHeaderSemantics,
+    titleSpacing: titleSpacing ?? this.titleSpacing,
+    toolbarOpacity: toolbarOpacity ?? this.toolbarOpacity,
+    bottomOpacity: bottomOpacity ?? this.bottomOpacity,
+    toolbarHeight: toolbarHeight ?? this.toolbarHeight,
+    leadingWidth: leadingWidth ?? this.leadingWidth,
+    toolbarTextStyle: toolbarTextStyle ?? this.toolbarTextStyle,
+    titleTextStyle: titleTextStyle ?? this.titleTextStyle,
+    systemOverlayStyle: systemOverlayStyle ?? this.systemOverlayStyle,
+    forceMaterialTransparency:
+        forceMaterialTransparency ?? this.forceMaterialTransparency,
+    clipBehavior: clipBehavior ?? this.clipBehavior,
+    actionsPadding: actionsPadding ?? this.actionsPadding,
+  );
 }

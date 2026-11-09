@@ -9,7 +9,8 @@ class FluttyBlocObserver extends BlocObserver {
     String message, {
     String? eventName,
     Map<String, dynamic>? parameters,
-  }) onErrorCallback;
+  })
+  onErrorCallback;
 
   @override
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
@@ -17,17 +18,17 @@ class FluttyBlocObserver extends BlocObserver {
     final nextState = change.nextState;
     final (errorState, exception) = switch (nextState) {
       FetchFailed() => (
-          'FetchFailed=>${nextState.failedMessage}',
-          nextState.exception,
-        ),
+        'FetchFailed=>${nextState.failedMessage}',
+        nextState.exception,
+      ),
       RefreshFailed() => (
-          'RefreshFailed=>${nextState.failedMessage}',
-          nextState.exception,
-        ),
+        'RefreshFailed=>${nextState.failedMessage}',
+        nextState.exception,
+      ),
       SubmitFailed() => (
-          'SubmitFailed=>${nextState.failedMessage}',
-          nextState.exception,
-        ),
+        'SubmitFailed=>${nextState.failedMessage}',
+        nextState.exception,
+      ),
       _ => (null, null),
     };
 

@@ -22,19 +22,35 @@ typedef FluttyStateErrorCallback = void Function(
 );
 
 typedef SuccessWidgetBuilder<F> = Widget Function(
-    F data, SubmitCubit<F> submitter, BuildContext context);
+  F data,
+  SubmitCubit<F> submitter,
+  BuildContext context,
+);
 typedef FailedWidgetBuilder<E> = Widget Function(
-    E data, VoidCallback retryFetch, BuildContext context);
+  E data,
+  VoidCallback retryFetch,
+  BuildContext context,
+);
 
 typedef PageElementWidgetBuilder<F> = Widget Function(
-    F? data, SubmitCubit<F> submitter, BuildContext context);
+  F? data,
+  SubmitCubit<F> submitter,
+  BuildContext context,
+);
 typedef AppBarBuilderWithData<F> = AppBar Function(
-    F? data, SubmitCubit<F> submitter, BuildContext context);
+  F? data,
+  SubmitCubit<F> submitter,
+  BuildContext context,
+);
 typedef AppBarBuilder = AppBar Function(
-    SubmitCubit<void> submitter, BuildContext context);
+  SubmitCubit<void> submitter,
+  BuildContext context,
+);
 
 typedef SubmitWidgetBuilder = Widget Function(
-    SubmitCubit<void> submitter, BuildContext context);
+  SubmitCubit<void> submitter,
+  BuildContext context,
+);
 typedef StaticChildBuilder<F> = Widget Function(
   Widget builtChild,
   SubmitCubit<F> submitter,

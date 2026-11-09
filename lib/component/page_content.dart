@@ -26,8 +26,8 @@ class PageContent<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final configLoader =
-        FluttyStateConfig.maybeOf(context)?.defaultSubmitLoader;
+    final configLoader = FluttyStateConfig.maybeOf(context)
+        ?.defaultSubmitLoader;
     final loader = submitLoader ?? configLoader;
 
     return Stack(
@@ -40,7 +40,7 @@ class PageContent<T> extends StatelessWidget {
                 child: child,
               ),
             ),
-            if (stickyBottom != null) stickyBottom!,
+            ?stickyBottom,
           ],
         ),
         BlocBuilder<SubmitCubit<T>, SubmitState>(
@@ -63,9 +63,7 @@ class _DefaultSubmitLoader extends StatelessWidget {
         const LinearProgressIndicator(),
         Opacity(
           opacity: 0.05,
-          child: ModalBarrier(
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          child: ModalBarrier(color: Theme.of(context).colorScheme.primary),
         ),
       ],
     );

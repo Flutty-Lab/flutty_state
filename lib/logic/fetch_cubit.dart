@@ -39,9 +39,9 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
       emit(switch (result) {
         DataFetchSucceed<F>() => FetchSucceed(data: result.data),
         DataFetchFailed<F>() => FetchFailed(
-            result.message,
-            exception: result.exception,
-          ),
+          result.message,
+          exception: result.exception,
+        ),
       });
     }
   }
@@ -56,9 +56,9 @@ class FetchCubit<F> extends Cubit<FetchState<F>> {
       emit(switch (result) {
         DataFetchSucceed<F>() => FetchSucceed(data: result.data),
         DataFetchFailed<F>() => RefreshFailed(
-            result.message,
-            exception: result.exception,
-          ),
+          result.message,
+          exception: result.exception,
+        ),
       });
     }
   }

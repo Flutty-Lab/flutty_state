@@ -151,9 +151,7 @@ class _SubmitPage extends StatelessWidget {
                 ? CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
-                      SliverToBoxAdapter(
-                        child: builder(submitCubit, context),
-                      )
+                      SliverToBoxAdapter(child: builder(submitCubit, context)),
                     ],
                   )
                 : builder(submitCubit, context),

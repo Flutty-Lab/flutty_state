@@ -35,12 +35,12 @@ class StaticPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _StaticPage(
-        padding: padding,
-        appBar: appBar,
-        floatingActionButton: floatingActionButton,
-        useCustomScrollView: useCustomScrollView,
-        child: child,
-      );
+    padding: padding,
+    appBar: appBar,
+    floatingActionButton: floatingActionButton,
+    useCustomScrollView: useCustomScrollView,
+    child: child,
+  );
 }
 
 class _StaticPage extends StatelessWidget {
@@ -60,22 +60,22 @@ class _StaticPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: appBar,
-        floatingActionButton: floatingActionButton,
-        body: SafeArea(
-          child: Padding(
-            padding: padding ?? EdgeInsets.all(Dimens.standardSpacing),
-            child: Stack(
-              children: [
-                useCustomScrollView
-                    ? CustomScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        slivers: [SliverToBoxAdapter(child: child)],
-                      )
-                    : child,
-              ],
-            ),
-          ),
+    appBar: appBar,
+    floatingActionButton: floatingActionButton,
+    body: SafeArea(
+      child: Padding(
+        padding: padding ?? EdgeInsets.all(Dimens.standardSpacing),
+        child: Stack(
+          children: [
+            useCustomScrollView
+                ? CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [SliverToBoxAdapter(child: child)],
+                  )
+                : child,
+          ],
         ),
-      );
+      ),
+    ),
+  );
 }

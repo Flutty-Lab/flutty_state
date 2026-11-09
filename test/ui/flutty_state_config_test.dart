@@ -53,8 +53,9 @@ void main() {
   });
 
   group('FetchAndSubmitPage with FluttyStateConfig', () {
-    testWidgets('uses fetchLoaderBuilder from config while fetching',
-        (tester) async {
+    testWidgets('uses fetchLoaderBuilder from config while fetching', (
+      tester,
+    ) async {
       final completer = Completer<DataFetchingResponse<int>>();
 
       await tester.pumpWidget(
@@ -63,7 +64,7 @@ void main() {
             defaultFetchLoader: const Text('custom-loader'),
             child: FetchAndSubmitPage<int>(
               dataFetcher: () => completer.future,
-              builder: (data, _, __) => Text('value: $data'),
+              builder: (data, _, _) => Text('value: $data'),
             ),
           ),
         ),
@@ -87,7 +88,7 @@ void main() {
             child: FetchAndSubmitPage<int>(
               fetchLoader: const Text('instance-loader'),
               dataFetcher: () => completer.future,
-              builder: (data, _, __) => Text('value: $data'),
+              builder: (data, _, _) => Text('value: $data'),
             ),
           ),
         ),
@@ -108,7 +109,7 @@ void main() {
         MaterialApp(
           home: FetchAndSubmitPage<int>(
             dataFetcher: () => completer.future,
-            builder: (data, _, __) => Text('value: $data'),
+            builder: (data, _, _) => Text('value: $data'),
           ),
         ),
       );
@@ -137,7 +138,7 @@ void main() {
             },
             child: FetchAndSubmitPage<int>(
               dataFetcher: fetchData,
-              builder: (data, _, __) => Text('value: $data'),
+              builder: (data, _, _) => Text('value: $data'),
             ),
           ),
         ),
@@ -149,8 +150,9 @@ void main() {
       expect(capturedException, same(error));
     });
 
-    testWidgets('page-level onFetchError takes precedence over config',
-        (tester) async {
+    testWidgets('page-level onFetchError takes precedence over config', (
+      tester,
+    ) async {
       String? configMessage;
       String? pageMessage;
 
@@ -164,7 +166,7 @@ void main() {
             child: FetchAndSubmitPage<int>(
               onFetchError: (message, _) => pageMessage = message,
               dataFetcher: fetchData,
-              builder: (data, _, __) => Text('value: $data'),
+              builder: (data, _, _) => Text('value: $data'),
             ),
           ),
         ),
@@ -176,8 +178,9 @@ void main() {
       expect(configMessage, isNull);
     });
 
-    testWidgets('invokes config.onSubmitError when submit fails',
-        (tester) async {
+    testWidgets('invokes config.onSubmitError when submit fails', (
+      tester,
+    ) async {
       String? captured;
       Future<DataFetchingResponse<int>> fetchData() async =>
           DataFetchSucceed(data: 0);
@@ -208,8 +211,9 @@ void main() {
   });
 
   group('SubmitPage with FluttyStateConfig', () {
-    testWidgets('invokes config.onSubmitError when submit fails',
-        (tester) async {
+    testWidgets('invokes config.onSubmitError when submit fails', (
+      tester,
+    ) async {
       String? captured;
       Future<DataSubmitResponse<void>> submitFailed() async =>
           DataSubmitFailed<void>(message: 'submit boom');
@@ -235,8 +239,9 @@ void main() {
       expect(captured, 'submit boom');
     });
 
-    testWidgets('page-level onSubmitError takes precedence over config',
-        (tester) async {
+    testWidgets('page-level onSubmitError takes precedence over config', (
+      tester,
+    ) async {
       String? configCalls;
       String? pageCalls;
       Future<DataSubmitResponse<void>> submitFailed() async =>
@@ -268,17 +273,14 @@ void main() {
 
   group('FluttyStateConfig constructor', () {
     test('requires child or appBuilder', () {
-      expect(
-        () => FluttyStateConfig(),
-        throwsA(isA<AssertionError>()),
-      );
+      expect(() => FluttyStateConfig(), throwsA(isA<AssertionError>()));
     });
 
     test('rejects both child and appBuilder', () {
       expect(
         () => FluttyStateConfig(
           child: const SizedBox.shrink(),
-          appBuilder: (_, __) => const SizedBox.shrink(),
+          appBuilder: (_, _) => const SizedBox.shrink(),
         ),
         throwsA(isA<AssertionError>()),
       );

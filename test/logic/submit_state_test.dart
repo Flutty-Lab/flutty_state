@@ -57,13 +57,15 @@ void main() {
       expect(state1, isNot(equals(state3)));
     });
 
-    test('all states should have empty props by default except those with data',
-        () {
-      final initial = SubmitInitial();
-      final submitting = Submitting();
+    test(
+      'all states should have empty props by default except those with data',
+      () {
+        final initial = SubmitInitial();
+        final submitting = Submitting();
 
-      expect(initial.props, isEmpty);
-      expect(submitting.props, isEmpty);
-    });
+        expect(initial.props, isEmpty);
+        expect(submitting.props, isEmpty);
+      },
+    );
   });
 }

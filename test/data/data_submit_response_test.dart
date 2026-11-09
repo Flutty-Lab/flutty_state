@@ -14,10 +14,7 @@ void main() {
     test('DataSubmitSucceed should store data and message', () {
       const message = 'Success';
       const data = 'result data';
-      final response = DataSubmitSucceed<String>(
-        data: data,
-        message: message,
-      );
+      final response = DataSubmitSucceed<String>(data: data, message: message);
 
       expect(response.message, message);
       expect(response.data, data);
@@ -25,10 +22,7 @@ void main() {
     });
 
     test('DataSubmitSucceed should work with different types', () {
-      final intResponse = DataSubmitSucceed<int>(
-        data: 42,
-        message: 'Success',
-      );
+      final intResponse = DataSubmitSucceed<int>(data: 42, message: 'Success');
       expect(intResponse.data, 42);
 
       final listResponse = DataSubmitSucceed<List<int>>(
@@ -70,8 +64,9 @@ void main() {
     });
 
     test('should support pattern matching for empty success', () {
-      final DataSubmitResponse<void> response =
-          DataSubmitSucceedEmpty(message: 'done');
+      final DataSubmitResponse<void> response = DataSubmitSucceedEmpty(
+        message: 'done',
+      );
 
       final result = switch (response) {
         DataSubmitSucceedEmpty(:final message) => 'Empty: $message',
@@ -83,8 +78,10 @@ void main() {
     });
 
     test('should support pattern matching for success with data', () {
-      final DataSubmitResponse<String> response =
-          DataSubmitSucceed<String>(data: 'result', message: 'done');
+      final DataSubmitResponse<String> response = DataSubmitSucceed<String>(
+        data: 'result',
+        message: 'done',
+      );
 
       final result = switch (response) {
         DataSubmitSucceedEmpty(:final message) => 'Empty: $message',
@@ -97,8 +94,9 @@ void main() {
     });
 
     test('should support pattern matching for failed case', () {
-      final DataSubmitResponse<String> response =
-          DataSubmitFailed<String>(message: 'network error');
+      final DataSubmitResponse<String> response = DataSubmitFailed<String>(
+        message: 'network error',
+      );
 
       final result = switch (response) {
         DataSubmitSucceedEmpty(:final message) => 'Empty: $message',

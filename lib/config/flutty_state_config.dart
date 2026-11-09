@@ -66,24 +66,25 @@ class FluttyStateConfig extends StatelessWidget {
     AppBuilder? appBuilder,
     FluttyMaterialTheme? theme,
     ThemeMode? mode,
-  })  : assert(
-          child != null || appBuilder != null,
-          'FluttyStateConfig requires either a child or an appBuilder.',
-        ),
-        assert(
-          child == null || appBuilder == null,
-          'FluttyStateConfig cannot receive both child and appBuilder.',
-        ),
-        assert(
-          appBuilder == null || (theme != null && mode != null),
-          'FluttyStateConfig.appBuilder requires both theme and mode.',
-        ),
-        child = child ??
-            FluttyThemeWrapper(
-              theme: theme!,
-              mode: mode!,
-              materialAppBuilder: appBuilder!,
-            );
+  }) : assert(
+         child != null || appBuilder != null,
+         'FluttyStateConfig requires either a child or an appBuilder.',
+       ),
+       assert(
+         child == null || appBuilder == null,
+         'FluttyStateConfig cannot receive both child and appBuilder.',
+       ),
+       assert(
+         appBuilder == null || (theme != null && mode != null),
+         'FluttyStateConfig.appBuilder requires both theme and mode.',
+       ),
+       child =
+           child ??
+           FluttyThemeWrapper(
+             theme: theme!,
+             mode: mode!,
+             materialAppBuilder: appBuilder!,
+           );
 
   /// The widget below this scope in the tree.
   ///
@@ -147,8 +148,8 @@ class FluttyStateConfig extends StatelessWidget {
   /// descendants because the page widgets re-read the config on every
   /// rebuild.
   static FluttyStateConfig? maybeOf(BuildContext context) {
-    final scope =
-        context.getInheritedWidgetOfExactType<_FluttyStateConfigScope>();
+    final scope = context
+        .getInheritedWidgetOfExactType<_FluttyStateConfigScope>();
     return scope?.config;
   }
 

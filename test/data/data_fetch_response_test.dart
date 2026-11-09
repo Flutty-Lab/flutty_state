@@ -49,8 +49,9 @@ void main() {
     });
 
     test('should support pattern matching', () {
-      final DataFetchingResponse<String> response =
-          DataFetchSucceed<String>(data: 'success');
+      final DataFetchingResponse<String> response = DataFetchSucceed<String>(
+        data: 'success',
+      );
 
       final result = switch (response) {
         DataFetchSucceed(:final data) => 'Got: $data',
@@ -61,8 +62,9 @@ void main() {
     });
 
     test('should support pattern matching for failed case', () {
-      final DataFetchingResponse<String> response =
-          DataFetchFailed<String>(message: 'network error');
+      final DataFetchingResponse<String> response = DataFetchFailed<String>(
+        message: 'network error',
+      );
 
       final result = switch (response) {
         DataFetchSucceed(:final data) => 'Got: $data',

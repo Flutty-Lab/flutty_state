@@ -1,3 +1,14 @@
+## 0.4.0
+
+- Require Flutter >=3.47.0 / Dart >=3.13.0
+- Bump `equatable` to ^3.0.0 (`EquatableMixin` was removed upstream; it was unused)
+- Bump `flutty_ds` dependency to ^0.2.0
+
+## 0.3.1
+
+- Add `FluttyStateConfig` providing app-wide defaults for `fetchLoader`, `submitLoader`, `onFetchError` and `onSubmitError`; `FetchAndSubmitPage` and `SubmitPage` resolve options in order: page constructor → nearest `FluttyStateConfig` ancestor → built-in default
+- `FetchCubit` now forwards the original exception when emitting `FetchFailed` / `RefreshFailed`
+
 ## 0.3.0
 
 - Log fetch and submit failures via `dart:developer` so exceptions are no longer silent

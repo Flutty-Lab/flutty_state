@@ -66,12 +66,11 @@ class SubmitCubit<F> extends Cubit<SubmitState> {
     if (!isClosed) {
       emit(switch (result) {
         DataSubmitSucceed() ||
-        DataSubmitSucceedEmpty() =>
-          SubmitSucceed(result.message),
+        DataSubmitSucceedEmpty() => SubmitSucceed(result.message),
         DataSubmitFailed() => SubmitFailed(
-            result.message,
-            exception: result.exception,
-          ),
+          result.message,
+          exception: result.exception,
+        ),
       });
 
       if (result is DataSubmitSucceed || result is DataSubmitSucceedEmpty) {
@@ -96,12 +95,11 @@ class SubmitCubit<F> extends Cubit<SubmitState> {
     if (!isClosed) {
       emit(switch (result) {
         DataSubmitSucceed() ||
-        DataSubmitSucceedEmpty() =>
-          SubmitSucceed(result.message),
+        DataSubmitSucceedEmpty() => SubmitSucceed(result.message),
         DataSubmitFailed() => SubmitFailed(
-            result.message,
-            exception: result.exception,
-          ),
+          result.message,
+          exception: result.exception,
+        ),
       });
 
       if (result is DataSubmitSucceed<F>) {
