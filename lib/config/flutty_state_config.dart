@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutty_ds/theme/flutty_material_theme.dart';
 import 'package:flutty_ds/theme/flutty_theme_wrapper.dart';
 import 'package:flutty_state/logic/fetch_cubit.dart';

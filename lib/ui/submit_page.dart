@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutty_state/component/page_content.dart';
 import 'package:flutty_state/logic/submit_cubit.dart';

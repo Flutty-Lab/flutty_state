@@ -74,7 +74,7 @@ void main() {
 
       notifier.dispose();
 
-      expect(() => notifier.update(5), throwsFlutterError);
+      expect(() => notifier.update(5), throwsA(isA<StateError>()));
     });
   });
 }

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutty_state/data/data_fetch_response.dart';
 import 'package:flutty_state/data/data_submit_response.dart';

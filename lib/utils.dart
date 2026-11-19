@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutty_ds/dimens.dart';
 import 'package:flutty_ds/theme/color/custom_colors.dart';
 import 'package:flutty_state/data/data_fetch_response.dart';
