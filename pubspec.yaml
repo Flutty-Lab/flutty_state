@@ -1,6 +1,6 @@
 name: flutty_state
 description: "Lightweight and reactive state management solution for Flutter."
-version: 0.4.0
+version: 0.5.0
 homepage: https://github.com/Flutty-Lab/flutty_state
 repository: https://github.com/Flutty-Lab/flutty_state
 issue_tracker: https://github.com/Flutty-Lab/flutty_state/issues
@@ -22,7 +22,7 @@ dependencies:
   bloc: ^9.0.0
   equatable: ^3.0.0
   flutter_bloc: ^9.1.0
-  flutty_ds: ^0.2.0
+  flutty_ds: ^0.3.0
 
   material_ui: ^1.11.1
 dev_dependencies:
